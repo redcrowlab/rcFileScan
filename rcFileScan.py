@@ -1,5 +1,5 @@
 ##################################################################################################
-# Red Crow Lab - http://www.redcrowlab.com 
+# Red Crow Lab - http://www.redcrowlab.com
 # Tool for parsing files and extracting useful information as well as basic vulnerability triage.
 # rcFileScan.py
 ##################################################################################################
@@ -43,6 +43,7 @@ def main(args):
 		args.cfi_check = True
 		args.stack_canaries = True
 		args.weak_crypto = True
+		args.dependencies = True
 
 	file_path = args.file
 	elf_parser = reELFlib.ELFParser(file_path)
@@ -59,7 +60,10 @@ def main(args):
 			print(f"[* FILE TYPE *]: {file_type}")
 		sys_file_type = reELFlib.getSysFileType(file_path)
 		if sys_file_type is not None:
-			print(f"[* SYSTEM FILE TYPE *]: {sys_file_type}")
+			build_id, remaining_results = sys_file_type
+			if build_id:
+				print(f"[* BUILD ID *]: {build_id}")
+			print(f"[* SYSTEM FILE TYPE *]: {remaining_results}")
 
 	if args.checksums:
 		md5sum, sha256sum = reELFlib.getCheckSums(file_path)
@@ -72,21 +76,6 @@ def main(args):
 		for key, value in bin_info.items():
 			print(f"[* {key.upper()} *]: {value}")
 
-	if args.count_imports:
-		import_count = reELFlib.countImports(elf_parser)
-		if import_count is not None:
-			print(f"[* IMPORTS COUNT *]: {import_count}")
-
-	if args.imports:
-		imports = reELFlib.getImports(file_path)
-		if imports is not None:
-			print(f"[* IMPORTS *]: {imports}")
-			
-	if args.strings:
-		strings = reELFlib.getStrings(file_path)
-		if strings is not None:
-			print(f"[* STRINGS *]: {strings}")
-	
 	if args.compile_date:
 		compileDate = reELFlib.getCompileDate(elf_parser)
 		if compileDate is not None:
@@ -96,34 +85,12 @@ def main(args):
 		linkerDate = reELFlib.getPrelinkedTime(file_path)
 		if linkerDate is not None:
 			print(f"[* LINKER DATE *]: {linkerDate}")
-
-	if args.count_exports:
-		exportsCount = reELFlib.countExports(elf_parser)
-		if exportsCount is not None:
-			print(f"[* EXPORTS COUNT *]: {exportsCount}")
-
-	if args.exports:
-		exports = reELFlib.getExports(elf_parser)
-		if exports is not None:
-			print(f"[* EXPORTS *]: {exports}")
 	
 	if args.sec_opts:
 		sec_opts = reELFlib.getSECopts(elf_parser)
 		print("[* SECURITY OPTIONS *]:")
 		for opt, enabled in sec_opts.items():
 			print(f"{opt}: {'Enabled' if enabled else 'Disabled'}")
-
-	if args.count_sections:
-		section_count = reELFlib.countSections(elf_parser)
-		print(f"[* NUMBER OF SECTIONS *]: {section_count}")
-
-	if args.get_sections:
-		sections = reELFlib.getSections(elf_parser)
-		print("[* SECTIONS *]:")
-		for sec in sections:
-			print(f"{sec['name']}")
-			# To get more detailed section information change the print to this:
-			# print(f"{sec['name']}, Type: {sec['type']}, Flags: {sec['flags']}, Address: {sec['address']}, Offset: {sec['offset']}, Size: {sec['size']}")
 
 	if args.entropy:
 		entropy = reELFlib.getEntropy(file_path)
@@ -136,20 +103,6 @@ def main(args):
 	if args.find_badCalls:
 		badCalls = reELFlib.findBadCalls(file_path)
 		print(f"[* BAD CALLS *]: {badCalls}")
-
-	if args.count_headers:
-		header_count = reELFlib.countHeaders(file_path)
-		print(f"[* NUMBER OF HEADERS *]: {header_count}")
-
-	if args.list_headers:
-		headers = reELFlib.getHeaders(file_path)
-		print(f"[* HEADERS *]: {headers}")
-	
-	if args.permissions:
-		permissions = reELFlib.checkSectionPerms(file_path)
-		print("[* SECTION PERMISSIONS *]:")
-		for section, perms, note in permissions:
-			print(f"{section}: {perms}{note}")
 
 	if args.dynamic_loading:
 		dynamic_loading = reELFlib.checkDynamicLoading(file_path)
@@ -176,14 +129,66 @@ def main(args):
 		if weak_crypto:
 			print(f"[* WEAK CRYPTO CHECK *]: Functions Found: {', '.join(weak_crypto)}")
 		else:
-			print("[* WEAK CRYPTO CHECK *]: No Functions Found.")
+			print("[* WEAK CRYPTO CHECK *]: Functions Found.")
 
 	if args.dependencies:
 		dependencies = reELFlib.getDependencies(elf_parser)
 		if dependencies:
-			print(f"[* DEPENDENCIES LIST *]:{', '.join(dependencies)}")
+			print(f"[* DEPENDENCIES LIST *]: {', '.join(dependencies)}")
 		else:
 			print("[* DEPENDENCY LISTY *]: No Dependencies Found.")
+	
+	if args.count_sections:
+		section_count = reELFlib.countSections(elf_parser)
+		print(f"[* NUMBER OF SECTIONS *]: {section_count}")
+
+	if args.get_sections:
+		sections = reELFlib.getSections(elf_parser)
+		print("[* SECTIONS *]:")
+		for sec in sections:
+			print(f"{sec['name']}")
+			# To get more detailed section information change the print to this:
+			# print(f"{sec['name']}, Type: {sec['type']}, Flags: {sec['flags']}, Address: {sec['address']}, Offset: {sec['offset']}, Size: {sec['size']}")
+
+	if args.permissions:
+		permissions = reELFlib.checkSectionPerms(file_path)
+		print("[* SECTION PERMISSIONS *]:")
+		for section, perms, note in permissions:
+			print(f"{section}: {perms}{note}")
+
+	if args.count_headers:
+		header_count = reELFlib.countHeaders(file_path)
+		print(f"[* NUMBER OF HEADERS *]: {header_count}")
+
+	if args.list_headers:
+		headers = reELFlib.getHeaders(file_path)
+		print(f"[* HEADERS *]: {headers}")
+
+	if args.count_imports:
+		import_count = reELFlib.countImports(elf_parser)
+		if import_count is not None:
+			print(f"[* IMPORTS COUNT *]: {import_count}")
+
+	if args.imports:
+		imports = reELFlib.getImports(file_path)
+		if imports is not None:
+			print(f"[* IMPORTS *]: {imports}")
+
+	if args.count_exports:
+		exportsCount = reELFlib.countExports(elf_parser)
+		if exportsCount is not None:
+			print(f"[* EXPORTS COUNT *]: {exportsCount}")
+
+	if args.exports:
+		exports = reELFlib.getExports(elf_parser)
+		if exports is not None:
+			print(f"[* EXPORTS *]: {exports}")
+			
+	if args.strings:
+		strings = reELFlib.getStrings(file_path)
+		if strings is not None:
+			print(f"[* STRINGS *]: {strings}")
+	
 
 ##########################################################
 # Parse command line arguments
@@ -216,7 +221,6 @@ if __name__ == "__main__":
 	parser.add_argument("-sc", "--stack_canaries", help="Check for stack canaries.", action="store_true")
 	parser.add_argument("-w", "--weak_crypto", help="Check for weak cryptographic functions.", action="store_true")
 	parser.add_argument("-dp", "--dependencies", help="List dependencies.", action="store_true")
-
 
 	args = parser.parse_args()
 	main(args)

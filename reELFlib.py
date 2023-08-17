@@ -1,5 +1,5 @@
 ############################################################################################################
-# Red Crow Lab - http://www.redcrowlab.com 
+# Red Crow Lab - http://www.redcrowlab.com
 # Library for parsing ELF files and extracting useful information as well as basic vulnerability triage.
 # reELFlib.py
 ############################################################################################################
@@ -168,15 +168,13 @@ def getCheckSums(file_path):
 def countImports(elf_parser):
 	imports = set()
 	elf_file = elf_parser.elf_file
-	for section in elf_file.iter_sections():
-		if isinstance(section, RelocationSection) and section.is_RELA():
-			symtab = elf_file.get_section(section['sh_link'])
-			for rel in section.iter_relocations():
-				symbol = symtab.get_symbol(rel['r_info_sym'])
-				if symbol['st_shndx'] == 'SHN_UNDEF':
-					name = symbol.name
-					if name:
-						imports.add(name)
+	dynsym_section = elf_file.get_section_by_name('.dynsym')
+	if dynsym_section:
+		for symbol in dynsym_section.iter_symbols():
+			if symbol['st_shndx'] == 'SHN_UNDEF':
+				name = symbol.name
+				if name:
+					imports.add(name)
 	return len(imports)
 
 
@@ -185,17 +183,15 @@ def countImports(elf_parser):
 def getImports(file_path):
 	imports = []
 	with open(file_path, 'rb') as f:
-		elf_file = ELFFile.ELFFile(f)  # Note the change here
-		for section in elf_file.iter_sections():
-			if isinstance(section, RelocationSection) and section.is_RELA():
-				symtab = elf_file.get_section(section['sh_link'])
-				for rel in section.iter_relocations():
-					symbol = symtab.get_symbol(rel['r_info_sym'])
-					if symbol['st_shndx'] == 'SHN_UNDEF':
-						name = symbol.name
-						if name:
-							imports.append(name)
-	return(imports)
+		elf_file = ELFFile.ELFFile(f)
+		dynsym_section = elf_file.get_section_by_name('.dynsym')
+		if dynsym_section:
+			for symbol in dynsym_section.iter_symbols():
+				if symbol['st_shndx'] == 'SHN_UNDEF':
+					name = symbol.name
+					if name:
+						imports.append(name)
+	return imports
 
 
 #####################################################
