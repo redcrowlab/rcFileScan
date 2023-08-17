@@ -176,7 +176,14 @@ def main(args):
 		if weak_crypto:
 			print(f"[* WEAK CRYPTO CHECK *]: Functions Found: {', '.join(weak_crypto)}")
 		else:
-			print("[* WEAK CRYPTO CHECK *]: Functions Found.")
+			print("[* WEAK CRYPTO CHECK *]: No Functions Found.")
+
+	if args.dependencies:
+		dependencies = reELFlib.getDependencies(elf_parser)
+		if dependencies:
+			print(f"[* DEPENDENCIES LIST *]:{', '.join(dependencies)}")
+		else:
+			print("[* DEPENDENCY LISTY *]: No Dependencies Found.")
 
 ##########################################################
 # Parse command line arguments
@@ -208,6 +215,8 @@ if __name__ == "__main__":
 	parser.add_argument("-cf", "--cfi_check", help="Check for CFI protections.", action="store_true")
 	parser.add_argument("-sc", "--stack_canaries", help="Check for stack canaries.", action="store_true")
 	parser.add_argument("-w", "--weak_crypto", help="Check for weak cryptographic functions.", action="store_true")
+	parser.add_argument("-dp", "--dependencies", help="List dependencies.", action="store_true")
+
 
 	args = parser.parse_args()
 	main(args)
