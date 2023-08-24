@@ -36,7 +36,7 @@ If you want to test stack canary detection compile with:
 
 ## Requirements
 
-Ubuntu, python3, pefile, readelf, python3-capstone libssl-dev
+Ubuntu, python3, python3-pefile, elfutils, python3-capstone libssl-dev, python3-pyelftools
 
 ===========================================================================
 
