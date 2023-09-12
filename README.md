@@ -2,7 +2,7 @@
 
 ##########################################################
 
-Red Crow Labs - http://www.redcrowlab.com 
+Red Crow Labs - http://www.redcrowlab.com  
 
 ##########################################################
 
@@ -36,7 +36,7 @@ If you want to test stack canary detection compile with:
 
 ## Requirements
 
-Ubuntu, python3, python3-pefile, elfutils, python3-capstone libssl-dev, python3-pyelftools
+Ubuntu, python3, python3-pefile, elfutils, python3-capstone libssl-dev, python3-pyelftools, python3-magic
 
 ===========================================================================
 
